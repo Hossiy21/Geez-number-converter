@@ -1,20 +1,44 @@
+require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const Geezify = require("geezify-js");
 const geezer = Geezify.create();
 
 const express = require('express');
 const app = express();
-app.get('/',(req,res)=>{
+
+// Load environment variables
+require('dotenv').config();
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const PORT = process.env.PORT || 3000;
+
+if (!BOT_TOKEN) {
+  console.error('Error: BOT_TOKEN is not defined in .env file');
+  process.exit(1);
+}
+
+app.get('/', (req, res) => {
   res.send("Working");
 });
 
-const port = 3000;
-app.listen(port,()=>{
-  console.log(`Server running at http://localhost:${port}`);
+// Start the server
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-const token = '6562304192:AAGCHlJvUr5AmrgKogZtuOia0yhlclgpP4Q';
-const bot = new TelegramBot(token, { polling: true });
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Port ${PORT} is already in use`);
+  } else if (error.code === 'EACCES') {
+    console.error(`Permission denied for port ${PORT}. Try a port number higher than 1024.`);
+  } else {
+    console.error('Server error:', error);
+  }
+  process.exit(1);
+});
+
+// Initialize Telegram bot
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
 
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;

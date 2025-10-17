@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: telegram-bot
+    env: node
+    build:
+      command: "npm install && npm run build"
+      publish: "/app/dist"
+    envVars:
+      - key: BOT_TOKEN
+        fromService:
+          name: telegram-bot
+          type: secret
+      - key: NODE_ENV
+        value: production
+    plan: free
+    numInstances: 1
+    healthCheckPath: /
